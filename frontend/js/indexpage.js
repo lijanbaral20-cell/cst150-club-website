@@ -108,7 +108,7 @@ function createFeaturedProductCard(
                         type="button"
                         class="btn btn-primary"
                         data-product-id="${product.product_id}"
-                        onclick="handleAddToCart(${product.product_id})"
+                        onclick="handleFeaturedAddToCart(${product.product_id})"
                     >
                         Add to Cart
                     </button>
@@ -153,7 +153,6 @@ function handleFeaturedAddToCart(productId) {
 }
 
 window.handleFeaturedAddToCart = handleFeaturedAddToCart;
-
 /* =========================================================
    IMAGE URL
 ========================================================= */
