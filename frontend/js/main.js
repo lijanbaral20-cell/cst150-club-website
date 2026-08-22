@@ -56,7 +56,7 @@ document.addEventListener(
         grid.innerHTML = products.map(product => {
 
             const image =
-                `http://127.0.0.1:5000/images/${encodeURIComponent(product.product_image)}`;
+                `${API_URL}/images/${encodeURIComponent(product.product_image)}`;
 
             return `
 

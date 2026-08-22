@@ -3,20 +3,16 @@
     -----------
     Handles rendering of the cart page.
 */
+document.addEventListener("DOMContentLoaded", async function () {
 
-document.addEventListener(
-    "DOMContentLoaded",
-    async function () {
-
-        if (!document.getElementById("cartItems")) {
-            return;
-        }
-
-        await loadProducts();
-
-        renderCartPage();
+    if (!document.getElementById("cartItems")) {
+        return;
     }
-);
+
+    await loadProducts();
+
+    renderCartPage();
+});
 
 
 /* =========================
@@ -26,39 +22,26 @@ document.addEventListener(
 function getCartImageUrl(productImage) {
 
     if (!productImage) {
-
         return "images/placeholder.jpg";
     }
 
-    let imageName =
-        String(productImage).trim();
-
-
-    /* Already a complete URL */
+    let imageName = String(productImage).trim();
 
     if (
         imageName.startsWith("http://") ||
         imageName.startsWith("https://")
     ) {
-
         return imageName;
     }
 
+    // Remove /images/ from the beginning
+    imageName = imageName.replace(/^\/?images\//, "");
 
-    /* Remove /images/ */
+    // Remove any remaining leading slash
+    imageName = imageName.replace(/^\/+/, "");
 
-    imageName =
-        imageName.replace(
-            /^\/?images\//,
-            ""
-        );
-
-
-    return `${API_URL}/images/${encodeURIComponent(
-        imageName
-    )}`;
+    return `${API_URL}/images/${encodeURIComponent(imageName)}`;
 }
-
 
 /* =========================
    RENDER CART

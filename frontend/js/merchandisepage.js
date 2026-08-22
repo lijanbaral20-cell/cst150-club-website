@@ -1,15 +1,14 @@
 /*
     merchandisepage.js
     -------------------
-    Loads merchandise directly from the Flask/MySQL API
+    Loads merchandise from the Flask/MySQL API
     and renders the product grid.
 */
 
-
-
 document.addEventListener("DOMContentLoaded", async function () {
-    await loadProducts();
-    renderProducts(PRODUCTS);
+
+    await loadMerchandise();
+
 });
 
 
@@ -30,7 +29,7 @@ async function loadMerchandise() {
 
     try {
 
-        console.log("Requesting products from MySQL...");
+        console.log("Requesting products from Render API...");
 
         const response = await fetch(
             `${API_URL}/api/products`
@@ -41,18 +40,18 @@ async function loadMerchandise() {
             response.status
         );
 
+        if (!response.ok) {
+            throw new Error(
+                `HTTP ${response.status}`
+            );
+        }
+
         const data = await response.json();
 
         console.log(
             "Products API response:",
             data
         );
-
-        if (!response.ok) {
-            throw new Error(
-                data.error || "Unable to load products"
-            );
-        }
 
         if (!data.success) {
             throw new Error(
@@ -74,7 +73,22 @@ async function loadMerchandise() {
             return;
         }
 
+        /*
+            Store products globally so cart.js
+            can use them.
+        */
+
         window.PRODUCTS = data.products;
+
+        /*
+            Also update the PRODUCTS variable
+            from cart.js if it exists.
+        */
+
+        if (typeof PRODUCTS !== "undefined") {
+            PRODUCTS = data.products;
+        }
+
         renderMerchandiseGrid(data.products);
 
     } catch (error) {
@@ -97,38 +111,66 @@ async function loadMerchandise() {
 /* --------------------------------------------------
    RENDER PRODUCT GRID
 -------------------------------------------------- */
+
 function renderMerchandiseGrid(products) {
 
-    const grid = document.getElementById("merchandiseGrid");
+    const grid =
+        document.getElementById("merchandiseGrid");
 
     if (!grid) {
-        console.error("merchandiseGrid element not found.");
+        console.error(
+            "merchandiseGrid element not found."
+        );
         return;
     }
 
     grid.innerHTML = products.map(function (product) {
 
-        let imageSrc = "images/placeholder.jpg";
+        let imageSrc =
+            "images/placeholder.jpg";
 
         if (product.product_image) {
 
-            const imageName =
+            let imageName =
                 String(product.product_image).trim();
 
-            if (imageName.startsWith("http://") ||
-                imageName.startsWith("https://")) {
+            /*
+                If database contains a complete URL,
+                use it directly.
+            */
+
+            if (
+                imageName.startsWith("http://") ||
+                imageName.startsWith("https://")
+            ) {
 
                 imageSrc = imageName;
 
             } else {
 
-                // Remove any existing /images/ prefix
-                const cleanName = imageName
-                    .replace(/^\/?images\//, "")
-                    .replace(/^\/+/, "");
+                /*
+                    Database currently returns values such as:
+
+                    /images/nightwave-club-cap.jpg
+
+                    Remove /images/ before sending the
+                    filename to Flask.
+                */
+
+                imageName =
+                    imageName.replace(
+                        /^\/?images\//,
+                        ""
+                    );
+
+                imageName =
+                    imageName.replace(
+                        /^\/+/,
+                        ""
+                    );
 
                 imageSrc =
-                    `${API_URL}/images/${encodeURIComponent(cleanName)}`;
+                    `${API_URL}/images/${encodeURIComponent(imageName)}`;
             }
         }
 
@@ -151,7 +193,10 @@ function renderMerchandiseGrid(products) {
                         src="${imageSrc}"
                         alt="${escapeHTML(product.product_title)}"
                         class="product-image"
-                        onerror="this.onerror=null; this.src='images/placeholder.jpg';"
+                        onerror="
+                            this.onerror=null;
+                            this.src='images/placeholder.jpg';
+                        "
                     >
 
                 </div>
@@ -159,7 +204,9 @@ function renderMerchandiseGrid(products) {
                 <div class="product-body">
 
                     <h3 class="product-title">
-                        ${escapeHTML(product.product_title)}
+                        ${escapeHTML(
+                            product.product_title
+                        )}
                     </h3>
 
                     <p class="product-description">
@@ -175,11 +222,14 @@ function renderMerchandiseGrid(products) {
                                 product.sell_price
                             ).toFixed(2)}
                         </span>
-                        
-                        <button 
-                            type="button" 
-                            class="btn btn-primary" 
-                            onclick="addToCart(${product.product_id}); showAddedToast('${escapeJS(product.product_title)}')"
+
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            onclick="
+                                addToCart(${product.product_id});
+                                showAddedToast('${escapeJS(product.product_title)}');
+                            "
                         >
                             Add to Cart
                         </button>
@@ -202,18 +252,17 @@ function renderMerchandiseGrid(products) {
 function renderCategoryFilters(products) {
 
     const container =
-        document.getElementById("categoryFilters");
+        document.getElementById(
+            "categoryFilters"
+        );
 
     if (!container) {
         return;
     }
 
     /*
-       Your current products table does NOT have a
-       category column.
-
-       Therefore, category filtering should not be
-       generated from product.category.
+        There is currently no category column
+        in the products table.
     */
 
     container.innerHTML = "";
@@ -226,7 +275,10 @@ function renderCategoryFilters(products) {
 
 function escapeHTML(value) {
 
-    if (value === null || value === undefined) {
+    if (
+        value === null ||
+        value === undefined
+    ) {
         return "";
     }
 
@@ -245,7 +297,10 @@ function escapeHTML(value) {
 
 function escapeJS(value) {
 
-    if (value === null || value === undefined) {
+    if (
+        value === null ||
+        value === undefined
+    ) {
         return "";
     }
 
@@ -253,6 +308,6 @@ function escapeJS(value) {
         .replace(/\\/g, "\\\\")
         .replace(/'/g, "\\'")
         .replace(/"/g, '\\"')
-        .replace(/\n/g, "\\n")
-        .replace(/\r/g, "\\r");
+        .replace(/\r/g, "\\r")
+        .replace(/\n/g, "\\n");
 }
