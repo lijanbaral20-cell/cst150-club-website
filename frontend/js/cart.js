@@ -1,18 +1,22 @@
 /*
     cart.js
     -------
-    Handles all cart state. Cart is stored in localStorage as a simple
-    array of { product_id, quantity } so it survives page navigation
-    without a backend.
+    Handles cart state using localStorage.
 
-     (backend integration): once the Flask API is live, swap
-    localStorage.getItem/setItem below for fetch() calls to the cart
-    endpoints, and swap PRODUCTS (from data.js) for a fetch() to
-    GET /api/products. The function signatures below can stay the same
-    so merchandise.html, cart.html and checkout.html don't need to change.
+    Products are loaded from the deployed Flask API.
 */
-let PRODUCTS = []
+
+const API_URL = "https://cst150-club-website-2.onrender.com";
+
+let PRODUCTS = [];
+
 const CART_KEY = "nightwave_cart";
+
+
+/* =========================
+   LOAD PRODUCTS FROM API
+========================= */
+
 async function loadProducts() {
     try {
         const response = await fetch(`${API_URL}/api/products`);
@@ -24,81 +28,178 @@ async function loadProducts() {
         const data = await response.json();
 
         if (!data.success) {
-            throw new Error(data.error || "Failed to load products");
+            throw new Error(
+                data.error || "Failed to load products"
+            );
         }
 
-        PRODUCTS = data.products;
+        PRODUCTS = data.products || [];
+
+        console.log("Products loaded:", PRODUCTS);
 
         return PRODUCTS;
 
     } catch (error) {
-        console.error("Failed to load products:", error);
+        console.error(
+            "Failed to load products:",
+            error
+        );
+
         PRODUCTS = [];
+
         return [];
     }
 }
 
-// Get the current cart from localStorage, or return an empty array if none exists
+
+/* =========================
+   GET CART
+========================= */
+
 function getCart() {
+
     const raw = localStorage.getItem(CART_KEY);
+
     if (!raw) {
         return [];
     }
+
     try {
-        return JSON.parse(raw);
+
+        const cart = JSON.parse(raw);
+
+        return Array.isArray(cart) ? cart : [];
+
     } catch (error) {
-        console.error("Invalid cart data:", error);
+
+        console.error(
+            "Invalid cart data:",
+            error
+        );
+
         return [];
     }
 }
-// Save the current cart to localStorage
+
+
+/* =========================
+   SAVE CART
+========================= */
+
 function saveCart(cart) {
+
     localStorage.setItem(
         CART_KEY,
         JSON.stringify(cart)
     );
 }
-// Add a product to the cart, or increase its quantity if it already exists
+
+
+/* =========================
+   ADD TO CART
+========================= */
+
 function addToCart(productId, quantity = 1) {
+
     productId = Number(productId);
     quantity = Number(quantity);
-    if (!Number.isInteger(productId) || productId <= 0) {
+
+    if (
+        !Number.isInteger(productId) ||
+        productId <= 0
+    ) {
+        console.error(
+            "Invalid product ID:",
+            productId
+        );
         return;
     }
-    if (!Number.isInteger(quantity) || quantity <= 0) {
+
+    if (
+        !Number.isInteger(quantity) ||
+        quantity <= 0
+    ) {
+        console.error(
+            "Invalid quantity:",
+            quantity
+        );
         return;
     }
+
     const cart = getCart();
+
     const existing = cart.find(
-        item => item.product_id === productId
+        item =>
+            Number(item.product_id) === productId
     );
 
     if (existing) {
-        existing.quantity += quantity;
+
+        existing.quantity =
+            Number(existing.quantity) + quantity;
+
     } else {
+
         cart.push({
             product_id: productId,
             quantity: quantity
         });
     }
+
     saveCart(cart);
+
     updateCartBadge();
+
+    console.log(
+        "Added to cart:",
+        productId,
+        "Quantity:",
+        quantity
+    );
+
+    /* Optional toast */
+    if (typeof showAddedToast === "function") {
+
+        const product = PRODUCTS.find(
+            p =>
+                Number(p.product_id) === productId
+        );
+
+        if (product) {
+            showAddedToast(
+                product.product_title
+            );
+        }
+    }
 }
-// Update the quantity of a product in the cart, or remove it if the quantity is zero or less
-function updateCartQuantity(productId, quantity) {
+
+
+/* =========================
+   UPDATE QUANTITY
+========================= */
+
+function updateCartQuantity(
+    productId,
+    quantity
+) {
+
     productId = Number(productId);
     quantity = Number(quantity);
+
     let cart = getCart();
 
     if (quantity <= 0) {
+
         cart = cart.filter(
-            item => item.product_id !== productId
+            item =>
+                Number(item.product_id) !== productId
         );
 
     } else {
 
         const item = cart.find(
-            item => item.product_id === productId
+            item =>
+                Number(item.product_id) === productId
         );
 
         if (item) {
@@ -107,82 +208,166 @@ function updateCartQuantity(productId, quantity) {
     }
 
     saveCart(cart);
+
     updateCartBadge();
 }
 
-// Remove a product from the cart entirely
+
+/* =========================
+   REMOVE FROM CART
+========================= */
+
 function removeFromCart(productId) {
+
     productId = Number(productId);
+
     const cart = getCart().filter(
-        item => item.product_id !== productId
+        item =>
+            Number(item.product_id) !== productId
     );
+
     saveCart(cart);
+
     updateCartBadge();
 }
+
+
+/* =========================
+   CLEAR CART
+========================= */
 
 function clearCart() {
+
     localStorage.removeItem(CART_KEY);
+
     updateCartBadge();
 }
 
-// Get the cart with product details from PRODUCTS (from data.js)
+
+/* =========================
+   CART WITH PRODUCT DETAILS
+========================= */
+
 function getCartWithDetails() {
 
-    if (typeof PRODUCTS === "undefined" || !Array.isArray(PRODUCTS)) {
-        console.error("PRODUCTS is not available or is not an array.");
+    if (!Array.isArray(PRODUCTS)) {
+
+        console.error(
+            "PRODUCTS is not available."
+        );
+
         return [];
     }
 
     return getCart()
         .map(item => {
 
-            const product = PRODUCTS.find(
-                p => Number(p.product_id) === Number(item.product_id)
-            );
+            const product =
+                PRODUCTS.find(
+                    p =>
+                        Number(p.product_id) ===
+                        Number(item.product_id)
+                );
 
             if (!product) {
+
                 console.warn(
-                    "Product not found for cart item:",
+                    "Product not found:",
                     item.product_id
                 );
+
                 return null;
             }
 
+            const quantity =
+                Number(item.quantity);
+
+            const price =
+                Number(product.sell_price) || 0;
+
             return {
-                product_id: Number(product.product_id),
-                quantity: Number(item.quantity),
-                product_title: product.product_title,
-                sell_price: Number(product.sell_price) || 0,
-                cost_price: Number(product.cost_price) || 0,
-                product_image: product.product_image,
+
+                product_id:
+                    Number(product.product_id),
+
+                quantity:
+                    quantity,
+
+                product_title:
+                    product.product_title,
+
+                sell_price:
+                    price,
+
+                cost_price:
+                    Number(product.cost_price) || 0,
+
+                product_image:
+                    product.product_image,
+
                 subtotal:
-                    (Number(product.sell_price) || 0) *
-                    Number(item.quantity)
+                    price * quantity
             };
+
         })
         .filter(Boolean);
 }
 
-// Get the total number of items in the cart
+
+/* =========================
+   CART COUNT
+========================= */
+
 function getCartCount() {
+
     return getCart().reduce(
-        (sum, item) => sum + item.quantity,
+        (sum, item) =>
+            sum + Number(item.quantity),
         0
     );
 }
 
-// Get the total cost of items in the cart
+
+/* =========================
+   CART TOTAL
+========================= */
+
 function getCartTotal() {
+
     return getCartWithDetails().reduce(
-        (sum, item) => sum + item.subtotal,
+        (sum, item) =>
+            sum + Number(item.subtotal),
         0
     );
 }
 
-// Update the cart badge in the header to reflect the current cart count
+
+/* =========================
+   UPDATE CART BADGE
+========================= */
+
 function updateCartBadge() {
-    const badge = document.getElementById("cartCount");
+
+    const badge =
+        document.getElementById("cartCount");
+
     if (badge) {
-        badge.textContent = getCartCount();
+
+        badge.textContent =
+            getCartCount();
     }
 }
+
+
+/* =========================
+   INITIAL CART BADGE
+========================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        updateCartBadge();
+
+    }
+);
