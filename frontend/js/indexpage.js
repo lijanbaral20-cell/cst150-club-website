@@ -107,7 +107,8 @@ function createFeaturedProductCard(
                     <button
                         type="button"
                         class="btn btn-primary"
-                        onclick="handleAddToCart(${product.product_id})"
+                        data-product-id="${product.product_id}"
+                        onclick="handleFeaturedAddToCart(${product.product_id})"
                     >
                         Add to Cart
                     </button>
@@ -121,6 +122,37 @@ function createFeaturedProductCard(
     `;
 }
 
+function handleFeaturedAddToCart(productId) {
+    productId = Number(productId);
+
+    if (!Number.isInteger(productId) || productId <= 0) {
+        console.error("Invalid product ID:", productId);
+        return;
+    }
+
+    if (typeof window.addToCart !== "function") {
+        console.error("addToCart is not available.");
+        return;
+    }
+
+    window.addToCart(productId);
+
+    if (typeof window.showAddedToast === "function") {
+        const product = window.PRODUCTS?.find(
+            p => Number(p.product_id) === productId
+        );
+
+        if (product) {
+            window.showAddedToast(product.product_title);
+        } else {
+            window.showAddedToast("Product");
+        }
+    }
+
+    console.log("Featured product added to cart:", productId);
+}
+
+window.handleFeaturedAddToCart = handleFeaturedAddToCart;
 
 /* =========================================================
    IMAGE URL
