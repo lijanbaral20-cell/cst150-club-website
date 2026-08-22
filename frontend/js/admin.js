@@ -1,21 +1,17 @@
 /*
     admin.js
     --------
-    Reads completed orders out of localStorage and renders the sales summary
-    table - one row per line item, showing who bought what, at what cost
-    price and sale price, so profit per sale is visible at a glance.
-
-     (backend integration): replace loadOrders() with a fetch() to
-    something like GET /api/admin/sales, which would join orders,
-    order_items, customers and products server-side. The rendering logic
-    below can stay as-is since it already expects that flattened shape.
+    Admin dashboard.
 */
+
+
 document.addEventListener(
     "DOMContentLoaded",
     async function () {
 
         const status =
             await checkAdminStatus();
+
 
         if (!status.authenticated) {
 
@@ -29,16 +25,30 @@ document.addEventListener(
         const sales =
             await fetchAdminSales();
 
-        if (sales.success) {
+
+        if (
+            sales.success &&
+            Array.isArray(sales.sales)
+        ) {
 
             renderSalesTable(
                 sales.sales
+            );
+
+        } else {
+
+            console.error(
+                sales.error ||
+                "Unable to load sales"
             );
         }
 
 
         const logoutBtn =
-            document.getElementById("logoutBtn");
+            document.getElementById(
+                "logoutBtn"
+            );
+
 
         if (logoutBtn) {
 
@@ -56,22 +66,32 @@ document.addEventListener(
     }
 );
 
+
+/* =========================================================
+   ADMIN STATUS
+========================================================= */
+
 async function checkAdminStatus() {
 
     try {
 
-        const response = await fetch(
-            `${API_URL}/api/admin/status`,
-            {
-                credentials: "include"
-            }
-        );
+        const response =
+            await fetch(
+                `${API_URL}/api/admin/status`,
+                {
+                    credentials:
+                        "include"
+                }
+            );
 
         return await response.json();
 
     } catch (error) {
 
-        console.error("Admin status error:", error);
+        console.error(
+            "Admin status error:",
+            error
+        );
 
         return {
             success: false,
@@ -80,71 +100,69 @@ async function checkAdminStatus() {
     }
 }
 
-async function fetchAdminSales() {
 
-    try {
-
-        const response = await fetch(
-            `${API_URL}/api/admin/sales`,
-            {
-                credentials: "include"
-            }
-        );
-
-        return await response.json();
-
-    } catch (error) {
-
-        console.error("Admin sales error:", error);
-
-        return {
-            success: false,
-            error: "Unable to load sales"
-        };
-    }
-}
+/* =========================================================
+   ADMIN SALES
+========================================================= */
 
 async function fetchAdminSales() {
 
     try {
 
-        const response = await fetch(
-            `${API_URL}/api/admin/sales`,
-            {
-                credentials: "include"
-            }
-        );
+        const response =
+            await fetch(
+                `${API_URL}/api/admin/sales`,
+                {
+                    credentials:
+                        "include"
+                }
+            );
 
         return await response.json();
 
     } catch (error) {
 
-        console.error("Admin sales error:", error);
+        console.error(
+            "Admin sales error:",
+            error
+        );
 
         return {
             success: false,
-            error: "Unable to load sales"
+            sales: [],
+            error:
+                "Unable to load sales"
         };
     }
 }
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
 
 async function logoutAdmin() {
 
     try {
 
-        const response = await fetch(
-            `${API_URL}/api/admin/logout`,
-            {
-                method: "POST",
-                credentials: "include"
-            }
-        );
+        const response =
+            await fetch(
+                `${API_URL}/api/admin/logout`,
+                {
+                    method: "POST",
+                    credentials:
+                        "include"
+                }
+            );
 
         return await response.json();
 
     } catch (error) {
 
-        console.error("Logout error:", error);
+        console.error(
+            "Logout error:",
+            error
+        );
 
         return {
             success: false
@@ -152,31 +170,180 @@ async function logoutAdmin() {
     }
 }
 
-function renderSalesTable(sales) {
-    const tbody = document.getElementById("salesTableBody");
-    let totalRev = 0;
+
+/* =========================================================
+   SALES TABLE
+========================================================= */
+
+function renderSalesTable(
+    sales
+) {
+
+    const tbody =
+        document.getElementById(
+            "salesTableBody"
+        );
+
+    if (!tbody) {
+        return;
+    }
+
+
+    let totalRevenue = 0;
+
     let totalProfit = 0;
 
-    tbody.innerHTML = sales.map(s => {
-        const profit = s.sale_price - s.cost_price;
-        totalRev += s.subtotal;
-        totalProfit += profit * s.quantity;
 
-        return `
-            <tr>
-                <td>#${s.order_id}</td>
-                <td>${s.email}</td>
-                <td>${s.product_title}</td>
-                <td>${s.quantity}</td>
-                <td>$${s.cost_price.toFixed(2)}</td>
-                <td>$${s.sale_price.toFixed(2)}</td>
-                <td>$${profit.toFixed(2)}</td>
-                <td>${new Date(s.order_date).toLocaleDateString()}</td>
-            </tr>
-        `;
-    }).join("");
+    tbody.innerHTML =
+        sales.map(
+            function (sale) {
 
-    document.getElementById("statOrders").textContent = sales.length;
-    document.getElementById("statRevenue").textContent = `$${totalRev.toFixed(2)}`;
-    document.getElementById("statProfit").textContent = `$${totalProfit.toFixed(2)}`;
+                const cost =
+                    Number(
+                        sale.cost_price
+                    ) || 0;
+
+                const price =
+                    Number(
+                        sale.sale_price
+                    ) || 0;
+
+                const quantity =
+                    Number(
+                        sale.quantity
+                    ) || 0;
+
+                const subtotal =
+                    Number(
+                        sale.subtotal
+                    ) || 0;
+
+                const profit =
+                    price - cost;
+
+
+                totalRevenue +=
+                    subtotal;
+
+                totalProfit +=
+                    profit *
+                    quantity;
+
+
+                return `
+
+                    <tr>
+
+                        <td>
+                            #${sale.order_id}
+                        </td>
+
+                        <td>
+                            ${escapeAdminHTML(
+                                sale.email
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeAdminHTML(
+                                sale.product_title
+                            )}
+                        </td>
+
+                        <td>
+                            ${quantity}
+                        </td>
+
+                        <td>
+                            $${cost.toFixed(2)}
+                        </td>
+
+                        <td>
+                            $${price.toFixed(2)}
+                        </td>
+
+                        <td>
+                            $${profit.toFixed(2)}
+                        </td>
+
+                        <td>
+                            ${new Date(
+                                sale.order_date
+                            ).toLocaleDateString()}
+                        </td>
+
+                    </tr>
+
+                `;
+            }
+        ).join("");
+
+
+    const ordersEl =
+        document.getElementById(
+            "statOrders"
+        );
+
+    const revenueEl =
+        document.getElementById(
+            "statRevenue"
+        );
+
+    const profitEl =
+        document.getElementById(
+            "statProfit"
+        );
+
+
+    if (ordersEl) {
+
+        ordersEl.textContent =
+            sales.length;
+    }
+
+    if (revenueEl) {
+
+        revenueEl.textContent =
+            `$${totalRevenue.toFixed(2)}`;
+    }
+
+    if (profitEl) {
+
+        profitEl.textContent =
+            `$${totalProfit.toFixed(2)}`;
+    }
 }
+
+
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
+
+function escapeAdminHTML(
+    value
+) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return "";
+    }
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+window.checkAdminStatus =
+    checkAdminStatus;
+
+window.fetchAdminSales =
+    fetchAdminSales;
+
+window.logoutAdmin =
+    logoutAdmin;

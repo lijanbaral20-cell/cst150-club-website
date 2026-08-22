@@ -1,53 +1,26 @@
 /*
     indexpage.js
     ------------
-    Loads featured merchandise from Flask/MySQL
-    and displays the first few products on the homepage.
+    Homepage featured products.
 */
 
+document.addEventListener(
+    "DOMContentLoaded",
+    async function () {
 
-document.addEventListener("DOMContentLoaded", async function () {
-    await loadProducts();
-    loadFeaturedProducts();
-});
-
-
-async function loadFeaturedProducts() {
-
-    const grid =
-        document.getElementById("featuredGrid");
-
-    if (!grid) {
-        return;
-    }
-
-    grid.innerHTML =
-        "<p>Loading merchandise...</p>";
-
-    try {
-
-        const response = await fetch(
-            `${API_URL}/api/products`
-        );
-
-        const data = await response.json();
-
-        console.log(
-            "Homepage products:",
-            data
-        );
-
-        if (!response.ok || !data.success) {
-            throw new Error(
-                data.error ||
-                "Unable to load products"
+        const grid =
+            document.getElementById(
+                "featuredGrid"
             );
+
+        if (!grid) {
+            return;
         }
 
-        if (
-            !Array.isArray(data.products) ||
-            data.products.length === 0
-        ) {
+        const products =
+            await loadProducts();
+
+        if (!products.length) {
 
             grid.innerHTML =
                 "<p>No featured products available.</p>";
@@ -55,74 +28,32 @@ async function loadFeaturedProducts() {
             return;
         }
 
-        /*
-            Make database products available to
-            cart.js as well.
-        */
-        window.PRODUCTS = data.products;
-
-        /*
-            Show first 4 products on homepage.
-        */
-        const featuredProducts =
-            data.products.slice(0, 4);
-
         grid.innerHTML =
-            featuredProducts
-                .map(createFeaturedProductCard)
+            products
+                .slice(0, 4)
+                .map(
+                    createFeaturedProductCard
+                )
                 .join("");
+    }
+);
 
-    } catch (error) {
 
-        console.error(
-            "Featured products error:",
-            error
+/* =========================================================
+   FEATURED PRODUCT
+========================================================= */
+
+function createFeaturedProductCard(
+    product
+) {
+
+    const imageSrc =
+        getProductImageUrl(
+            product.product_image
         );
 
-        grid.innerHTML = `
-            <p>
-                Unable to load featured merchandise.
-            </p>
-        `;
-    }
-}
-
-
-/*
-    Create a featured product card
-*/
-
-function createFeaturedProductCard(product) {
-
-    let imageSrc =
-        "images/placeholder.jpg";
-
-    if (product.product_image) {
-
-        let imageName =
-            String(product.product_image).trim();
-
-        if (
-            imageName.startsWith("http://") ||
-            imageName.startsWith("https://")
-        ) {
-
-            imageSrc = imageName;
-
-        } else {
-
-            imageName = imageName
-                .replace(/^\/?images\//, "")
-                .replace(/^\/+/, "");
-
-            imageSrc =
-                `${API_URL}/images/${encodeURIComponent(
-                    imageName
-                )}`;
-        }
-    }
-
     return `
+
         <article class="product-card">
 
             <div class="product-thumb">
@@ -141,34 +72,42 @@ function createFeaturedProductCard(product) {
 
             </div>
 
+
             <div class="product-body">
 
                 <h3 class="product-title">
+
                     ${escapeHTML(
                         product.product_title
                     )}
+
                 </h3>
 
+
                 <p class="product-description">
+
                     ${escapeHTML(
                         product.product_description
                     )}
+
                 </p>
+
 
                 <div class="product-footer">
 
                     <span class="product-price">
+
                         $${Number(
                             product.sell_price
                         ).toFixed(2)}
+
                     </span>
+
 
                     <button
                         type="button"
                         class="btn btn-primary"
-                        onclick="addToCart(
-                            ${product.product_id}
-                        )"
+                        onclick="handleAddToCart(${product.product_id})"
                     >
                         Add to Cart
                     </button>
@@ -178,15 +117,55 @@ function createFeaturedProductCard(product) {
             </div>
 
         </article>
+
     `;
 }
 
 
-/*
-    Prevent HTML injection from product data.
-*/
+/* =========================================================
+   IMAGE URL
+========================================================= */
 
-function escapeHTML(value) {
+function getProductImageUrl(
+    productImage
+) {
+
+    if (!productImage) {
+
+        return "images/placeholder.jpg";
+    }
+
+    let imageName =
+        String(productImage).trim();
+
+
+    if (
+        imageName.startsWith("http://") ||
+        imageName.startsWith("https://")
+    ) {
+
+        return imageName;
+    }
+
+
+    imageName = imageName
+        .replace(/^\/?images\//i, "")
+        .replace(/^\/+/, "");
+
+
+    return `${API_URL}/images/${encodeURIComponent(
+        imageName
+    )}`;
+}
+
+
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
+
+function escapeHTML(
+    value
+) {
 
     if (
         value === null ||

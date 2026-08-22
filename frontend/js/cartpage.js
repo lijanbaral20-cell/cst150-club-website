@@ -1,31 +1,45 @@
 /*
     cartpage.js
     -----------
-    Handles rendering of the cart page.
+    Renders shopping cart.
 */
-document.addEventListener("DOMContentLoaded", async function () {
 
-    if (!document.getElementById("cartItems")) {
-        return;
+document.addEventListener(
+    "DOMContentLoaded",
+    async function () {
+
+        const container =
+            document.getElementById(
+                "cartItems"
+            );
+
+        if (!container) {
+            return;
+        }
+
+        await loadProducts();
+
+        renderCartPage();
+
+        updateCartBadge();
     }
-
-    await loadProducts();
-
-    renderCartPage();
-});
+);
 
 
-/* =========================
-   BUILD IMAGE URL
-========================= */
+/* =========================================================
+   IMAGE URL
+========================================================= */
 
-function getCartImageUrl(productImage) {
+function getCartImageUrl(
+    productImage
+) {
 
     if (!productImage) {
         return "images/placeholder.jpg";
     }
 
-    let imageName = String(productImage).trim();
+    let imageName =
+        String(productImage).trim();
 
     if (
         imageName.startsWith("http://") ||
@@ -34,28 +48,30 @@ function getCartImageUrl(productImage) {
         return imageName;
     }
 
-    // Remove /images/ from the beginning
-    imageName = imageName.replace(/^\/?images\//, "");
+    imageName = imageName
+        .replace(/^\/?images\//i, "")
+        .replace(/^\/+/, "");
 
-    // Remove any remaining leading slash
-    imageName = imageName.replace(/^\/+/, "");
-
-    return `${API_URL}/images/${encodeURIComponent(imageName)}`;
+    return `${API_URL}/images/${encodeURIComponent(
+        imageName
+    )}`;
 }
 
-/* =========================
+
+/* =========================================================
    RENDER CART
-========================= */
+========================================================= */
 
 function renderCartPage() {
-
-    const items =
-        getCartWithDetails();
 
     const container =
         document.getElementById(
             "cartItems"
         );
+
+    if (!container) {
+        return;
+    }
 
     const emptyState =
         document.getElementById(
@@ -72,26 +88,11 @@ function renderCartPage() {
             "checkoutLink"
         );
 
-
-    if (!container) {
-        return;
-    }
+    const items =
+        getCartWithDetails();
 
 
-    console.log(
-        "Cart:",
-        getCart()
-    );
-
-    console.log(
-        "Cart items:",
-        items
-    );
-
-
-    /* =========================
-       EMPTY CART
-    ========================= */
+    /* EMPTY CART */
 
     if (items.length === 0) {
 
@@ -117,18 +118,14 @@ function renderCartPage() {
     }
 
 
-    /* =========================
-       CART HAS ITEMS
-    ========================= */
+    /* CART HAS ITEMS */
 
     if (emptyState) {
-
         emptyState.style.display =
             "none";
     }
 
     if (checkoutLink) {
-
         checkoutLink.classList.remove(
             "disabled"
         );
@@ -136,158 +133,162 @@ function renderCartPage() {
 
 
     container.innerHTML =
-        items.map(function (item) {
+        items.map(
+            function (item) {
 
-            const imageSrc =
-                getCartImageUrl(
-                    item.product_image
-                );
+                const imageSrc =
+                    getCartImageUrl(
+                        item.product_image
+                    );
+
+                return `
+
+                    <div class="cart-row">
+
+                        <div class="cart-row-thumb">
+
+                            <img
+                                src="${imageSrc}"
+                                alt="${escapeCartHTML(
+                                    item.product_title
+                                )}"
+                                class="cart-product-image"
+                                onerror="
+                                    this.onerror=null;
+                                    this.src='images/placeholder.jpg';
+                                "
+                            >
+
+                        </div>
 
 
-            return `
-                <div class="cart-row">
+                        <div class="cart-row-info">
 
-                    <div class="cart-row-thumb">
+                            <h3>
+                                ${escapeCartHTML(
+                                    item.product_title
+                                )}
+                            </h3>
 
-                        <img
-                            src="${imageSrc}"
-                            alt="${escapeCartHTML(
-                                item.product_title
-                            )}"
-                            class="cart-product-image"
-                            onerror="
-                                this.onerror=null;
-                                this.src='images/placeholder.jpg';
-                            "
-                        >
+                            <p>
+                                $${Number(
+                                    item.sell_price
+                                ).toFixed(2)}
+                                each
+                            </p>
 
-                    </div>
+                        </div>
 
 
-                    <div class="cart-row-info">
+                        <div class="cart-row-qty">
 
-                        <h3>
-                            ${escapeCartHTML(
-                                item.product_title
-                            )}
-                        </h3>
+                            <button
+                                type="button"
+                                class="qty-btn"
+                                onclick="changeQty(
+                                    ${item.product_id},
+                                    ${item.quantity - 1}
+                                )"
+                            >
+                                -
+                            </button>
 
-                        <p>
+                            <span>
+                                ${item.quantity}
+                            </span>
+
+                            <button
+                                type="button"
+                                class="qty-btn"
+                                onclick="changeQty(
+                                    ${item.product_id},
+                                    ${item.quantity + 1}
+                                )"
+                            >
+                                +
+                            </button>
+
+                        </div>
+
+
+                        <div class="cart-row-subtotal">
+
                             $${Number(
-                                item.sell_price
+                                item.subtotal
                             ).toFixed(2)}
-                            each
-                        </p>
 
-                    </div>
-
-
-                    <div class="cart-row-qty">
-
-                        <button
-                            type="button"
-                            class="qty-btn"
-                            onclick="changeQty(
-                                ${item.product_id},
-                                ${item.quantity - 1}
-                            )"
-                        >
-                            -
-                        </button>
-
-
-                        <span>
-                            ${item.quantity}
-                        </span>
+                        </div>
 
 
                         <button
                             type="button"
-                            class="qty-btn"
-                            onclick="changeQty(
-                                ${item.product_id},
-                                ${item.quantity + 1}
+                            class="remove-btn"
+                            onclick="removeItem(
+                                ${item.product_id}
                             )"
                         >
-                            +
+                            Remove
                         </button>
 
                     </div>
 
+                `;
+            }
+        ).join("");
 
-                    <div class="cart-row-subtotal">
-
-                        $${Number(
-                            item.subtotal
-                        ).toFixed(2)}
-
-                    </div>
-
-
-                    <button
-                        type="button"
-                        class="remove-btn"
-                        onclick="removeItem(
-                            ${item.product_id}
-                        )"
-                    >
-                        Remove
-                    </button>
-
-                </div>
-            `;
-
-        }).join("");
-
-
-    /* =========================
-       TOTAL
-    ========================= */
 
     if (totalEl) {
 
         totalEl.textContent =
             "$" +
-            getCartTotal().toFixed(2);
+            Number(
+                getCartTotal()
+            ).toFixed(2);
     }
 }
 
 
-/* =========================
+/* =========================================================
    CHANGE QUANTITY
-========================= */
+========================================================= */
 
 function changeQty(
     productId,
-    newQuantity
+    quantity
 ) {
 
     updateCartQuantity(
         productId,
-        newQuantity
+        quantity
     );
 
     renderCartPage();
 }
 
 
-/* =========================
+/* =========================================================
    REMOVE ITEM
-========================= */
+========================================================= */
 
-function removeItem(productId) {
+function removeItem(
+    productId
+) {
 
-    removeFromCart(productId);
+    removeFromCart(
+        productId
+    );
 
     renderCartPage();
 }
 
 
-/* =========================
-   HTML ESCAPING
-========================= */
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
 
-function escapeCartHTML(value) {
+function escapeCartHTML(
+    value
+) {
 
     if (
         value === null ||
@@ -303,3 +304,13 @@ function escapeCartHTML(value) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 }
+
+
+window.changeQty =
+    changeQty;
+
+window.removeItem =
+    removeItem;
+
+window.renderCartPage =
+    renderCartPage;

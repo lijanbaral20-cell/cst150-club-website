@@ -1,277 +1,260 @@
 /*
     merchandisepage.js
     -------------------
-    Loads merchandise from the Flask/MySQL API
-    and renders the product grid.
+    Loads and displays merchandise.
 */
 
-document.addEventListener("DOMContentLoaded", async function () {
+document.addEventListener(
+    "DOMContentLoaded",
+    async function () {
 
-    await loadMerchandise();
+        const products =
+            await loadProducts();
 
-});
+        renderMerchandiseGrid(
+            products
+        );
+    }
+);
 
 
-/* --------------------------------------------------
-   LOAD PRODUCTS FROM FLASK / MYSQL
--------------------------------------------------- */
+/* =========================================================
+   IMAGE URL
+========================================================= */
 
-async function loadMerchandise() {
+function getProductImageUrl(
+    productImage
+) {
 
-    const grid = document.getElementById("merchandiseGrid");
-
-    if (!grid) {
-        console.error("merchandiseGrid element not found.");
-        return;
+    if (!productImage) {
+        return "images/placeholder.jpg";
     }
 
-    grid.innerHTML = "<p>Loading merchandise...</p>";
+    let imageName =
+        String(productImage).trim();
 
-    try {
+    /* Already a complete URL */
 
-        console.log("Requesting products from Render API...");
-
-        const response = await fetch(
-            `${API_URL}/api/products`
-        );
-
-        console.log(
-            "Products API status:",
-            response.status
-        );
-
-        if (!response.ok) {
-            throw new Error(
-                `HTTP ${response.status}`
-            );
-        }
-
-        const data = await response.json();
-
-        console.log(
-            "Products API response:",
-            data
-        );
-
-        if (!data.success) {
-            throw new Error(
-                data.error || "Product request failed"
-            );
-        }
-
-        if (!Array.isArray(data.products)) {
-            throw new Error(
-                "Invalid products response from server"
-            );
-        }
-
-        if (data.products.length === 0) {
-
-            grid.innerHTML =
-                "<p>No products found.</p>";
-
-            return;
-        }
-
-        /*
-            Store products globally so cart.js
-            can use them.
-        */
-
-        window.PRODUCTS = data.products;
-
-        /*
-            Also update the PRODUCTS variable
-            from cart.js if it exists.
-        */
-
-        if (typeof PRODUCTS !== "undefined") {
-            PRODUCTS = data.products;
-        }
-
-        renderMerchandiseGrid(data.products);
-
-    } catch (error) {
-
-        console.error(
-            "Merchandise loading error:",
-            error
-        );
-
-        grid.innerHTML = `
-            <p class="error-message">
-                Unable to load merchandise.
-                Please try again.
-            </p>
-        `;
-    }
-}
-
-
-/* --------------------------------------------------
-   RENDER PRODUCT GRID
--------------------------------------------------- */
-
-function renderMerchandiseGrid(products) {
-
-    const grid =
-        document.getElementById("merchandiseGrid");
-
-    if (!grid) {
-        console.error(
-            "merchandiseGrid element not found."
-        );
-        return;
-    }
-
-    grid.innerHTML = products.map(function (product) {
-
-        let imageSrc =
-            "images/placeholder.jpg";
-
-        if (product.product_image) {
-
-            let imageName =
-                String(product.product_image).trim();
-
-            /*
-                If database contains a complete URL,
-                use it directly.
-            */
-
-            if (
-                imageName.startsWith("http://") ||
-                imageName.startsWith("https://")
-            ) {
-
-                imageSrc = imageName;
-
-            } else {
-
-                /*
-                    Database currently returns values such as:
-
-                    /images/nightwave-club-cap.jpg
-
-                    Remove /images/ before sending the
-                    filename to Flask.
-                */
-
-                imageName =
-                    imageName.replace(
-                        /^\/?images\//,
-                        ""
-                    );
-
-                imageName =
-                    imageName.replace(
-                        /^\/+/,
-                        ""
-                    );
-
-                imageSrc =
-                    `${API_URL}/images/${encodeURIComponent(imageName)}`;
-            }
-        }
-
-        console.log(
-            "Product:",
-            product.product_title,
-            "Image:",
-            imageSrc
-        );
-
-        return `
-            <article
-                class="product-card"
-                data-id="${product.product_id}"
-            >
-
-                <div class="product-thumb">
-
-                    <img
-                        src="${imageSrc}"
-                        alt="${escapeHTML(product.product_title)}"
-                        class="product-image"
-                        onerror="
-                            this.onerror=null;
-                            this.src='images/placeholder.jpg';
-                        "
-                    >
-
-                </div>
-
-                <div class="product-body">
-
-                    <h3 class="product-title">
-                        ${escapeHTML(
-                            product.product_title
-                        )}
-                    </h3>
-
-                    <p class="product-description">
-                        ${escapeHTML(
-                            product.product_description
-                        )}
-                    </p>
-
-                    <div class="product-footer">
-
-                        <span class="product-price">
-                            $${Number(
-                                product.sell_price
-                            ).toFixed(2)}
-                        </span>
-
-                        <button
-                            type="button"
-                            class="btn btn-primary"
-                            onclick="
-                                addToCart(${product.product_id});
-                                showAddedToast('${escapeJS(product.product_title)}');
-                            "
-                        >
-                            Add to Cart
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </article>
-        `;
-
-    }).join("");
-}
-
-
-/* --------------------------------------------------
-   CATEGORY FILTERS
--------------------------------------------------- */
-
-function renderCategoryFilters(products) {
-
-    const container =
-        document.getElementById(
-            "categoryFilters"
-        );
-
-    if (!container) {
-        return;
+    if (
+        imageName.startsWith("http://") ||
+        imageName.startsWith("https://")
+    ) {
+        return imageName;
     }
 
     /*
-        There is currently no category column
-        in the products table.
+        Database may contain:
+
+        /images/nightwave-club-cap.jpg
+
+        or
+
+        images/nightwave-club-cap.jpg
+
+        We only want:
+
+        nightwave-club-cap.jpg
     */
 
-    container.innerHTML = "";
+    imageName = imageName
+        .replace(/^\/?images\//i, "")
+        .replace(/^\/+/, "");
+
+    return `${API_URL}/images/${encodeURIComponent(
+        imageName
+    )}`;
 }
 
 
-/* --------------------------------------------------
+/* =========================================================
+   RENDER PRODUCTS
+========================================================= */
+
+function renderMerchandiseGrid(
+    products
+) {
+
+    const grid =
+        document.getElementById(
+            "merchandiseGrid"
+        );
+
+    if (!grid) {
+        return;
+    }
+
+    if (
+        !Array.isArray(products) ||
+        products.length === 0
+    ) {
+
+        grid.innerHTML =
+            "<p>No products found.</p>";
+
+        return;
+    }
+
+    grid.innerHTML =
+        products.map(
+            function (product) {
+
+                const imageSrc =
+                    getProductImageUrl(
+                        product.product_image
+                    );
+
+                return `
+
+                    <article
+                        class="product-card"
+                        data-id="${product.product_id}"
+                    >
+
+                        <div class="product-thumb">
+
+                            <img
+                                src="${imageSrc}"
+                                alt="${escapeHTML(
+                                    product.product_title
+                                )}"
+                                class="product-image"
+                                onerror="
+                                    this.onerror=null;
+                                    this.src='images/placeholder.jpg';
+                                "
+                            >
+
+                        </div>
+
+                        <div class="product-body">
+
+                            <h3 class="product-title">
+                                ${escapeHTML(
+                                    product.product_title
+                                )}
+                            </h3>
+
+                            <p class="product-description">
+                                ${escapeHTML(
+                                    product.product_description
+                                )}
+                            </p>
+
+                            <div class="product-footer">
+
+                                <span class="product-price">
+                                    $${Number(
+                                        product.sell_price
+                                    ).toFixed(2)}
+                                </span>
+
+                                <button
+                                    type="button"
+                                    class="btn btn-primary"
+                                    onclick="handleAddToCart(${product.product_id})"
+                                >
+                                    Add to Cart
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                `;
+            }
+        ).join("");
+}
+
+
+/* =========================================================
+   ADD TO CART BUTTON
+========================================================= */
+
+function handleAddToCart(
+    productId
+) {
+
+    addToCart(
+        Number(productId)
+    );
+
+    const product =
+        PRODUCTS.find(
+            p =>
+                Number(p.product_id) ===
+                Number(productId)
+        );
+
+    if (product) {
+
+        showAddedToast(
+            product.product_title
+        );
+    }
+}
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+function showAddedToast(
+    productTitle
+) {
+
+    let toast =
+        document.getElementById(
+            "cartToast"
+        );
+
+    if (!toast) {
+
+        toast =
+            document.createElement(
+                "div"
+            );
+
+        toast.id =
+            "cartToast";
+
+        toast.className =
+            "cart-toast";
+
+        document.body.appendChild(
+            toast
+        );
+    }
+
+    toast.textContent =
+        `${productTitle} added to cart`;
+
+    toast.classList.add(
+        "visible"
+    );
+
+    clearTimeout(
+        window._toastTimeout
+    );
+
+    window._toastTimeout =
+        setTimeout(
+            function () {
+
+                toast.classList.remove(
+                    "visible"
+                );
+
+            },
+            2200
+        );
+}
+
+
+/* =========================================================
    HTML ESCAPING
--------------------------------------------------- */
+========================================================= */
 
 function escapeHTML(value) {
 
@@ -291,23 +274,8 @@ function escapeHTML(value) {
 }
 
 
-/* --------------------------------------------------
-   JAVASCRIPT STRING ESCAPING
--------------------------------------------------- */
+window.handleAddToCart =
+    handleAddToCart;
 
-function escapeJS(value) {
-
-    if (
-        value === null ||
-        value === undefined
-    ) {
-        return "";
-    }
-
-    return String(value)
-        .replace(/\\/g, "\\\\")
-        .replace(/'/g, "\\'")
-        .replace(/"/g, '\\"')
-        .replace(/\r/g, "\\r")
-        .replace(/\n/g, "\\n");
-}
+window.showAddedToast =
+    showAddedToast;
