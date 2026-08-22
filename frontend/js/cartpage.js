@@ -4,7 +4,6 @@
     Handles rendering of the cart page.
 */
 
-
 document.addEventListener(
     "DOMContentLoaded",
     async function () {

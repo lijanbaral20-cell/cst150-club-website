@@ -9,7 +9,7 @@
 
 document.addEventListener("DOMContentLoaded", async function () {
     await loadProducts();
-    loadMerchandise();
+    renderProducts(PRODUCTS);
 });
 
 
@@ -176,13 +176,13 @@ function renderMerchandiseGrid(products) {
                             ).toFixed(2)}
                         </span>
                         
-                        <button
-                        type="button"
-                        class="btn btn-primary"
-                       onclick="addToCart(${product.product_id}); showAddedToast('${escapeJS(product.product_title)}')"
-                    >
-                        Add to Cart
-                    </button>
+                        <button 
+                            type="button" 
+                            class="btn btn-primary" 
+                            onclick="addToCart(${product.product_id}); showAddedToast('${escapeJS(product.product_title)}')"
+                        >
+                            Add to Cart
+                        </button>
 
                     </div>
 
