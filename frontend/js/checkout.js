@@ -28,6 +28,36 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 });
 
+async function submitOrder(payload) {
+
+    try {
+
+        const response = await fetch(
+            `${API_URL}/api/orders`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "include",
+                body: JSON.stringify(payload)
+            }
+        );
+
+        const data = await response.json();
+
+        return data;
+
+    } catch (error) {
+
+        console.error("Order submission error:", error);
+
+        return {
+            success: false,
+            error: "Unable to connect to backend"
+        };
+    }
+}
 
 function renderOrderSummary() {
 

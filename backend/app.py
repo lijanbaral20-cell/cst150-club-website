@@ -22,6 +22,8 @@ IMAGE_DIR = os.path.join(FRONTEND_DIR, "images")
 # Allow frontend to communicate with Flask
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "NightwaveClubSecretKey2026")
+if not app.secret_key:
+    raise RuntimeError("SECRET_KEY environment variable is not configured")
 
 # Configuring session cookies
 app.config.update(
@@ -42,7 +44,7 @@ CORS(
     origins=[
         "http://127.0.0.1:5500",
         "http://localhost:5500",
-        "https://cst150-club-website.vercel.app/"
+        "https://cst150-club-website.vercel.app"
     ]
 )
 

@@ -5,14 +5,14 @@
     Cart data/functions are handled by cart.js.
 */
 
-const API_URL = "http://127.0.0.1:5000";
+return `${API_URL}/images/${encodeURIComponent(imageName)}`;
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
 
     if (!document.getElementById("cartItems")) {
         return;
     }
-
+    await loadProducts();
     renderCartPage();
 });
 

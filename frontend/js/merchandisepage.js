@@ -5,9 +5,10 @@
     and renders the product grid.
 */
 
-const API_URL = "http://127.0.0.1:5000";
 
-document.addEventListener("DOMContentLoaded", function () {
+
+document.addEventListener("DOMContentLoaded", async function () {
+    await loadProducts();
     loadMerchandise();
 });
 

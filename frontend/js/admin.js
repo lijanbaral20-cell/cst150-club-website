@@ -56,6 +56,102 @@ document.addEventListener(
     }
 );
 
+async function checkAdminStatus() {
+
+    try {
+
+        const response = await fetch(
+            `${API_URL}/api/admin/status`,
+            {
+                credentials: "include"
+            }
+        );
+
+        return await response.json();
+
+    } catch (error) {
+
+        console.error("Admin status error:", error);
+
+        return {
+            success: false,
+            authenticated: false
+        };
+    }
+}
+
+async function fetchAdminSales() {
+
+    try {
+
+        const response = await fetch(
+            `${API_URL}/api/admin/sales`,
+            {
+                credentials: "include"
+            }
+        );
+
+        return await response.json();
+
+    } catch (error) {
+
+        console.error("Admin sales error:", error);
+
+        return {
+            success: false,
+            error: "Unable to load sales"
+        };
+    }
+}
+
+async function fetchAdminSales() {
+
+    try {
+
+        const response = await fetch(
+            `${API_URL}/api/admin/sales`,
+            {
+                credentials: "include"
+            }
+        );
+
+        return await response.json();
+
+    } catch (error) {
+
+        console.error("Admin sales error:", error);
+
+        return {
+            success: false,
+            error: "Unable to load sales"
+        };
+    }
+}
+
+async function logoutAdmin() {
+
+    try {
+
+        const response = await fetch(
+            `${API_URL}/api/admin/logout`,
+            {
+                method: "POST",
+                credentials: "include"
+            }
+        );
+
+        return await response.json();
+
+    } catch (error) {
+
+        console.error("Logout error:", error);
+
+        return {
+            success: false
+        };
+    }
+}
+
 function renderSalesTable(sales) {
     const tbody = document.getElementById("salesTableBody");
     let totalRev = 0;

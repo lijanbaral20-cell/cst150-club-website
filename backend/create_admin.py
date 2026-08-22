@@ -29,6 +29,6 @@ try:
             (username, password_hash),
         )
     connection.commit()
-    print(f"Admin account created/updated successfully: {username} / {password}")
+    print(f"Admin account created/updated successfully: {username}")
 finally:
     connection.close()

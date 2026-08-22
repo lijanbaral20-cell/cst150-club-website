@@ -19,44 +19,26 @@ let PRODUCTS = [];
 // Load products from Flask/MySQL
 async function loadProducts() {
     try {
-
-        const response = await fetch(
-            "http://127.0.0.1:5000/api/products"
-        );
+        const response = await fetch(`${API_URL}/api/products`);
 
         if (!response.ok) {
-            throw new Error(
-                "Failed to load products: " + response.status
-            );
+            throw new Error(`HTTP error: ${response.status}`);
         }
 
         const data = await response.json();
 
-        PRODUCTS = Array.isArray(data.products)
-            ? data.products
-            : [];
-
-        console.log("Products loaded:", PRODUCTS);
-
-        // If we are on the cart page, render it after products arrive
-        if (document.getElementById("cartItems")) {
-            renderCartPage();
+        if (!data.success) {
+            throw new Error(data.error || "Failed to load products");
         }
 
-        // Update header cart badge
-        if (typeof updateCartBadge === "function") {
-            updateCartBadge();
-        }
+        PRODUCTS = data.products;
+
+        return PRODUCTS;
 
     } catch (error) {
-
-        console.error("Error loading products:", error);
-
+        console.error("Failed to load products:", error);
         PRODUCTS = [];
-
-        if (document.getElementById("cartItems")) {
-            renderCartPage();
-        }
+        return [];
     }
 }
 

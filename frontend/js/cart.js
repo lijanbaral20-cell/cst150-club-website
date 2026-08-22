@@ -11,8 +11,33 @@
     GET /api/products. The function signatures below can stay the same
     so merchandise.html, cart.html and checkout.html don't need to change.
 */
-
+let PRODUCTS = []
 const CART_KEY = "nightwave_cart";
+async function loadProducts() {
+    try {
+        const response = await fetch(`${API_URL}/api/products`);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.error || "Failed to load products");
+        }
+
+        PRODUCTS = data.products;
+
+        return PRODUCTS;
+
+    } catch (error) {
+        console.error("Failed to load products:", error);
+        PRODUCTS = [];
+        return [];
+    }
+}
+
 // Get the current cart from localStorage, or return an empty array if none exists
 function getCart() {
     const raw = localStorage.getItem(CART_KEY);

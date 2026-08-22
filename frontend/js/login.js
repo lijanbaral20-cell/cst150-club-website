@@ -26,3 +26,38 @@ document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
         errBox.style.display = "block";
     }
 });
+
+async function loginAdmin(username, password) {
+
+    try {
+
+        const response = await fetch(
+            `${API_URL}/api/admin/login`,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                credentials: "include",
+
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            }
+        );
+
+        return await response.json();
+
+    } catch (error) {
+
+        console.error("Login error:", error);
+
+        return {
+            success: false,
+            error: "Unable to connect to backend"
+        };
+    }
+}

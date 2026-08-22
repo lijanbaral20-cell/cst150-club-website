@@ -5,9 +5,9 @@
     and displays the first few products on the homepage.
 */
 
-const API_URL = "http://127.0.0.1:5000";
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
+    await loadProducts();
     loadFeaturedProducts();
 });
 
