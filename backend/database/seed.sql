@@ -1,3 +1,4 @@
+-- Used for insering the data into table
 USE nightwave_club;
 
 -- Insering data into product table

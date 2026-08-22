@@ -3,8 +3,6 @@
     --------
     Admin dashboard.
 */
-
-
 document.addEventListener(
     "DOMContentLoaded",
     async function () {
