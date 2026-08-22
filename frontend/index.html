@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nightwave - Digital Club Store</title>
+    <meta name="description" content="Nightwave Club sells the mixes, sample packs, visuals and passes we make in-house. Every drop is instant-download.">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!--
+        Shared header/nav - identical block appears on every page.
+        NOTE for Hector: this is a good candidate for a Jinja include
+        (e.g. base.html / _header.html) once the Flask templates are set up.
+    -->
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="index.html" class="logo">
+                <span class="logo-mark"></span>
+                <span class="logo-text">
+                    <h1>Nightwave</h1>
+                    <span>Club Merchandise Store</span>
+                </span>
+            </a>
+
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation menu">
+                <span></span><span></span><span></span>
+            </button>
+
+            <nav class="site-nav" id="siteNav">
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="merchandise.html">Merchandise</a></li>
+                    <li><a href="cart.html">Cart</a></li>
+                    <li><a href="login.html">Admin</a></li>
+                </ul>
+                <a href="cart.html" class="cart-link">
+                    Cart <span class="cart-badge" id="cartCount">0</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- HERO -->
+        <section class="hero">
+            <div class="container hero-inner">
+                <div>
+                    <div class="eyebrow"><span class="eyebrow-dot"></span> Now Dropping - Season 3</div>
+                    <h2>Nightwave club/merchandise concept<span class="accent">.</span></h2>
+                    <p class="hero-desc">Nightwave Club sells the mixes, sample packs, visuals and passes we make in-house - every drop is instant-download and ready before your next set.</p>
+                    <div class="hero-actions">
+                        <a href="merchandise.html" class="btn btn-primary">Browse Merchandise</a>
+                        <a href="merchandise.html" class="btn btn-secondary">See What's New</a>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <div class="stat-number">12</div>
+                            <div class="stat-label">Live Drops</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="stat-number">320KBPS</div>
+                            <div class="stat-label">Min. Audio Quality</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="stat-number">Instant</div>
+                            <div class="stat-label">Digital Delivery</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-visual" aria-hidden="true"></div>
+            </div>
+        </section>
+
+        <!-- FEATURED PRODUCTS -->
+        <section class="section section-alt">
+            <div class="container">
+                <div class="section-header">
+                    <div>
+                                        <h2>Fresh Off The Decks</h2>
+                                    <p>
+                    A few of this month's drops. 
+                    Grab official Nightwave Club merchandise and artist-inspired gear.
+                </p>
+                </div>
+                    <a href="merchandise.html" class="btn btn-secondary">View All Merchandise</a>
+                </div>
+                <div class="product-grid" id="featuredGrid">
+                    <!-- featured product cards inserted here by indexpage.js -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; <span id="footerYear"></span> Nightwave Club. Built for CST150 Web Technologies.</p>
+        </div>
+    </footer>
+
+    <script src="js/data.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/indexpage.js"></script>
+</body>
+</html>

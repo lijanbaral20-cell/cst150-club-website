@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merchandise - Nightwave</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="index.html" class="logo">
+                <span class="logo-mark"></span>
+                <span class="logo-text">
+                    <h1>Nightwave</h1>
+                    <span>Digital Club Store</span>
+                </span>
+            </a>
+
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation menu">
+                <span></span><span></span><span></span>
+            </button>
+
+            <nav class="site-nav" id="siteNav">
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="merchandise.html">Merchandise</a></li>
+                    <li><a href="cart.html">Cart</a></li>
+                    <li><a href="login.html">Admin</a></li>
+                </ul>
+                <a href="cart.html" class="cart-link">
+                    Cart <span class="cart-badge" id="cartCount">0</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="page-header">
+            <div class="container">
+                <h1>Merchandise</h1>
+                <p>Every mix, sample pack, visual bundle and pass we've got. Filter by category or just browse everything.</p>
+            </div>
+        </div>
+
+        <section class="section">
+            <div class="container">
+                <div class="filter-bar" id="categoryFilters">
+                    <!-- category chips inserted here by merchandisepage.js -->
+                </div>
+                <div class="product-grid" id="merchandiseGrid">
+                    <!-- product cards inserted here by merchandisepage.js -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; <span id="footerYear"></span> Nightwave Club. Built for CST150 Web Technologies.</p>
+        </div>
+    </footer>
+
+    <script src="js/data.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/merchandisepage.js"></script>
+</body>
+</html>

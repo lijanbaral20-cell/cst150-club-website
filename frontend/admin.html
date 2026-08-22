@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Summary - Nightwave Admin</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="index.html" class="logo">
+                <span class="logo-mark"></span>
+                <span class="logo-text">
+                    <h1>Nightwave</h1>
+                    <span>Digital Club Store</span>
+                </span>
+            </a>
+
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation menu">
+                <span></span><span></span><span></span>
+            </button>
+
+            <nav class="site-nav" id="siteNav">
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="merchandise.html">Merchandise</a></li>
+                    <li><a href="cart.html">Cart</a></li>
+                    <li><a href="admin.html" class="active">Admin</a></li>
+                </ul>
+                <a href="cart.html" class="cart-link">
+                    Cart <span class="cart-badge" id="cartCount">0</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="admin-header">
+                <div>
+                    <h1>Sales Summary</h1>
+                    <p style="color: var(--text-muted); margin-top: 6px;">Every completed sale, with cost price and sale price shown per item.</p>
+                </div>
+                <button class="btn btn-secondary" id="logoutBtn">Log Out</button>
+            </div>
+
+            <div class="stat-cards">
+                <div class="stat-card">
+                    <div class="stat-label">Total Orders</div>
+                    <div class="stat-value" id="statOrders">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-value" id="statRevenue">$0.00</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Profit</div>
+                    <div class="stat-value" id="statProfit">$0.00</div>
+                </div>
+            </div>
+
+            <div class="sales-table-wrapper">
+                <table class="sales-table">
+                    <thead>
+                        <tr>
+                            <th>Order</th>
+                            <th>Purchaser</th>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Cost Price</th>
+                            <th>Sale Price</th>
+                            <th>Profit</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="salesTableBody">
+                        <!-- sale rows inserted here by admin.js -->
+                    </tbody>
+                </table>
+                <p class="empty-note" id="salesEmptyState" style="display:none;">
+                    No sales yet. Completed orders will show up here.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; <span id="footerYear"></span> Nightwave Club. Built for CST150 Web Technologies.</p>
+        </div>
+    </footer>
+
+    <script src="js/data.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
