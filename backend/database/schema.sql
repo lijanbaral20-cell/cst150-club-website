@@ -1,5 +1,5 @@
-CREATE DATABASE 
-IF NOT EXISTS nightwave_club; -- For error handling
+-- CREATE DATABASE 
+-- IF NOT EXISTS nightwave_club; -- For error handling
 
 USE nightwave_club;
 

@@ -23,6 +23,13 @@ IMAGE_DIR = os.path.join(FRONTEND_DIR, "images")
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "NightwaveClubSecretKey2026")
 
+# Configuring session cookies
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="None"
+)
+
 # Route to serve frontend files 
 @app.route("/images/<path:filename>")
 def product_image(filename):
@@ -30,8 +37,14 @@ def product_image(filename):
 
 # Enable credentials for cross-origin session cookies
 CORS(
-    app, supports_credentials=True,origins=[
-        "http://127.0.0.1:5500", "http://localhost:5500"])
+    app,
+    supports_credentials=True,
+    origins=[
+        "http://127.0.0.1:5500",
+        "http://localhost:5500",
+        "https://cst150-club-website.vercel.app/"
+    ]
+)
 
 # Function to get a database connection
 def get_db_connection():
